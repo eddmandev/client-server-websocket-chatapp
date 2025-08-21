@@ -9,9 +9,13 @@ import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import java.lang.reflect.Type;
 
 public class StompSessionHandler extends StompSessionHandlerAdapter {
-
+    private String username;
+    public StompSessionHandler(String username){
+        this.username = username;
+    }
     @Override
     public void afterConnected(StompSession session, StompHeaders headers) {
+        System.out.println("Connection started");
         session.subscribe("/topic/messages", new StompFrameHandler() {
             @Override
             public Type getPayloadType(StompHeaders headers) {
@@ -32,6 +36,7 @@ public class StompSessionHandler extends StompSessionHandlerAdapter {
                 }
             }
         });
+        System.out.println("Client subscribed to /topic/messages");
     }
 
     @Override
