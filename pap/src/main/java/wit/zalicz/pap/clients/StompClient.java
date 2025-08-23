@@ -15,10 +15,8 @@ import java.util.concurrent.ExecutionException;
 
 public class StompClient {
     private StompSession session;
-    private final String username;
 
-    public StompClient(String username) throws ExecutionException, InterruptedException {
-        this.username = username;
+    public StompClient(MessageListener listener, String username) throws ExecutionException, InterruptedException {
 
         // transport is a method/protocol to transfer data between the client and server
         List<Transport> transports = new ArrayList<>();
@@ -28,18 +26,22 @@ public class StompClient {
         WebSocketStompClient wsStompClient = new WebSocketStompClient(sockJsClient);
         wsStompClient.setMessageConverter(new MappingJackson2MessageConverter());
 
-        var sessionHandler = new StompSessionHandler(username);
+        var sessionHandler = new StompSessionHandler(listener, username);
         String url = "ws://localhost:8080/ws"; //ws for websocket
         session = wsStompClient.connectAsync(url, sessionHandler).get();
-
     }
 
     public void sendMessage(Message message) {
         try {
-            session.send("/app/messsage", message);
+            session.send("/app/message", message);
             System.out.println("Message sent: " + message.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void disconnectUser(String username) {
+        session.send("/app/disconnect", username);
+        System.out.println("Disconnected: " + username);
     }
 }

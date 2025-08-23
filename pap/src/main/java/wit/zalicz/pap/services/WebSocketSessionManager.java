@@ -1,16 +1,16 @@
 package wit.zalicz.pap.services;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
-import wit.zalicz.pap.templates.SimpleMessagingTemplate;
 
 import java.util.ArrayList;
 
 @Service
 public class WebSocketSessionManager {
     private final ArrayList<String> activeUsernames = new ArrayList<>();
-    private final SimpleMessagingTemplate msgTemplate;
+    private final SimpMessagingTemplate msgTemplate;
 
-    public WebSocketSessionManager(SimpleMessagingTemplate msgTemplate){
+    public WebSocketSessionManager(SimpMessagingTemplate msgTemplate){
         this.msgTemplate = msgTemplate;
     }
 

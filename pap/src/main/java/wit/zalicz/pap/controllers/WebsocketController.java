@@ -1,15 +1,17 @@
 package wit.zalicz.pap.controllers;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.stereotype.Controller;
 import wit.zalicz.pap.model.Message;
 import wit.zalicz.pap.services.WebSocketSessionManager;
-import wit.zalicz.pap.templates.SimpleMessagingTemplate;
 
+@Controller
 public class WebsocketController {
-    private final SimpleMessagingTemplate msgTemplate;
+    private final SimpMessagingTemplate msgTemplate;
     private final WebSocketSessionManager webSocketSessionManager;
 
-    public WebsocketController(SimpleMessagingTemplate msgTemplate, WebSocketSessionManager webSocketSessionManager){
+    public WebsocketController(SimpMessagingTemplate msgTemplate, WebSocketSessionManager webSocketSessionManager){
         this.msgTemplate = msgTemplate;
         this.webSocketSessionManager = webSocketSessionManager;
     }
@@ -32,5 +34,11 @@ public class WebsocketController {
         webSocketSessionManager.removeUsername(username);
         webSocketSessionManager.broadcastActiveUsernames();
         System.out.println(username + " disconnected");
+    }
+
+    @MessageMapping("/request-users")
+    public void requestUsers(){
+        webSocketSessionManager.broadcastActiveUsernames();
+        System.out.println("requesting users");
     }
 }

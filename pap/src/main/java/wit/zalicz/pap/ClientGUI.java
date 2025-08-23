@@ -1,6 +1,8 @@
 package wit.zalicz.pap;
 
 import io.micrometer.common.util.StringUtils;
+import wit.zalicz.pap.clients.MessageListener;
+import wit.zalicz.pap.clients.StompClient;
 import wit.zalicz.pap.model.Message;
 
 import javax.swing.*;
@@ -9,15 +11,21 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 import static wit.zalicz.pap.utils.ComponentUtilities.*;
 
-public class ClientGUI extends JFrame {
+public class ClientGUI extends JFrame implements MessageListener {
     private JPanel connectedUsersPanel;
     private JPanel messagePanel;
+    private StompClient client;
+    private String username;
 
-    public ClientGUI(String username) {
+    public ClientGUI(String username) throws ExecutionException, InterruptedException {
         super("User: " + username);
+        this.username = username;
+        client = new StompClient(this, username);
         setSize(1218, 685);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
@@ -26,6 +34,7 @@ public class ClientGUI extends JFrame {
             public void windowClosing(WindowEvent e) {
                 int userChoice = JOptionPane.showConfirmDialog(ClientGUI.this, "Czy chcesz wyjsc z aplikacji?", "Zamknij", JOptionPane.YES_NO_OPTION);
                 if (userChoice == JOptionPane.YES_OPTION) {
+                    client.disconnectUser(username);
                     ClientGUI.this.dispose();
                 }
             }
@@ -82,11 +91,15 @@ public class ClientGUI extends JFrame {
                     messagePanel.add(createChatMessageComponent(new Message("example",input)));
                     repaint();
                     revalidate();
+
+
+                    client.sendMessage(new Message(username, input));
                 }
             }
         });
         inputField.setBackground(DARK_THEME);
         inputField.setForeground(TEXT_COLOR);
+        inputField.setBorder(addPadding(0, 10, 0, 10));
         inputField.setFont(new Font("Inter", Font.PLAIN, 16));
         inputField.setCaretColor(TEXT_COLOR);
         inputField.setBorder(BorderFactory.createLineBorder(TEXT_COLOR, 2)); // White border
@@ -118,5 +131,37 @@ public class ClientGUI extends JFrame {
         chatMessage.add(messageLabel);
 
         return chatMessage;
+    }
+
+    @Override
+    public void onMessageReceived(Message message) {
+        System.out.println("on message received");
+
+        messagePanel.add(createChatMessageComponent(message));
+        revalidate();
+        repaint();
+    }
+
+    @Override
+    public void onActiveUsersUpdated(ArrayList<String> users) {
+        if (connectedUsersPanel.getComponents().length>=2){
+            connectedUsersPanel.remove(1);
+        }
+
+        var userListPanel = new JPanel();
+        userListPanel.setBackground(TRANSPARENT);
+        userListPanel.setLayout(new BoxLayout(userListPanel, BoxLayout.Y_AXIS));
+
+        users.stream().forEach(user -> {
+            var username = new JLabel();
+            username.setText(user);
+            username.setForeground(TEXT_COLOR);
+            username.setFont(new Font("Inter", Font.BOLD, 16));
+            userListPanel.add(username);
+        });
+
+        connectedUsersPanel.add(userListPanel);
+        connectedUsersPanel.revalidate();
+        connectedUsersPanel.repaint();
     }
 }
