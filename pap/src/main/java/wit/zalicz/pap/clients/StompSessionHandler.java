@@ -9,12 +9,13 @@ import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 import java.lang.reflect.Type;
 
 public class StompSessionHandler extends StompSessionHandlerAdapter {
-    private String username;
+    private final String username;
     public StompSessionHandler(String username){
         this.username = username;
     }
     @Override
     public void afterConnected(StompSession session, StompHeaders headers) {
+        session.send("/app/connect", username);
         System.out.println("Connection started");
         session.subscribe("/topic/messages", new StompFrameHandler() {
             @Override
