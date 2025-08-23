@@ -8,8 +8,6 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 
 @Configuration
 @EnableWebSocketMessageBroker // enables web socket message handling
-
-// A message broker is a
 public class WebsocketConfiguration implements WebSocketMessageBrokerConfigurer {
 
     @Override

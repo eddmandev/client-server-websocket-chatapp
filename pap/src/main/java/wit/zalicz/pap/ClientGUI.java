@@ -71,7 +71,6 @@ public class ClientGUI extends JFrame implements MessageListener {
         messagePanel = new JPanel();
         messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.Y_AXIS));
         messagePanel.setBackground(DARK_THEME);
-        messagePanel.add(createChatMessageComponent(new Message("ed", "hello world")));
         chatPanel.add(new JScrollPane(messagePanel), BorderLayout.CENTER);
 
         var inputPanel = new JPanel(new BorderLayout());
@@ -88,10 +87,9 @@ public class ClientGUI extends JFrame implements MessageListener {
                     if (StringUtils.isEmpty(input)) return;
                     inputField.setText("");
 
-                    messagePanel.add(createChatMessageComponent(new Message("example",input)));
+//                    messagePanel.add(createChatMessageComponent(new Message(username,input)));
                     repaint();
                     revalidate();
-
 
                     client.sendMessage(new Message(username, input));
                 }

@@ -14,6 +14,7 @@ public class WebsocketController {
     public WebsocketController(SimpMessagingTemplate msgTemplate, WebSocketSessionManager webSocketSessionManager){
         this.msgTemplate = msgTemplate;
         this.webSocketSessionManager = webSocketSessionManager;
+        System.out.println("construcotr intialized");
     }
 
     @MessageMapping("/message")
