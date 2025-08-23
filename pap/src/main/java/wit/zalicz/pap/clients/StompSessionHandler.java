@@ -64,6 +64,10 @@ public class StompSessionHandler extends StompSessionHandlerAdapter {
                 }
             }
         });
+
+        System.out.println("subscribed to /topic/users");
+
+        session.send("/app/request-users", "");
     }
 
     @Override
