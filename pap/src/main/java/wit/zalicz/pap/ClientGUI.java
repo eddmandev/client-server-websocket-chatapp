@@ -32,7 +32,7 @@ public class ClientGUI extends JFrame implements MessageListener {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                int userChoice = JOptionPane.showConfirmDialog(ClientGUI.this, "Czy chcesz wyjsc z aplikacji?", "Zamknij", JOptionPane.YES_NO_OPTION);
+                int userChoice = JOptionPane.showConfirmDialog(ClientGUI.this, "Czy chcesz wyjść z aplikacji?", "Zamknij", JOptionPane.YES_NO_OPTION);
                 if (userChoice == JOptionPane.YES_OPTION) {
                     client.disconnectUser(username);
                     ClientGUI.this.dispose();
@@ -40,10 +40,43 @@ public class ClientGUI extends JFrame implements MessageListener {
             }
         });
 
-        getContentPane().setBackground(DARK_THEME);
+        getContentPane().setBackground(WIT_LIGHT_GRAY);
+        setLayout(new BorderLayout());
+
+        add(createHeaderPanel(), BorderLayout.NORTH);
         addGuiComponents();
         addChatComponents();
     }
+
+    private JPanel createHeaderPanel() {
+        JPanel header = new JPanel(new BorderLayout());
+        header.setPreferredSize(new Dimension(getWidth(), 40));
+        header.setBackground(WIT_RED);
+
+        ImageIcon originalIcon = new ImageIcon(getClass().getResource("/static/wit-logo.png"));
+        Image scaledImage = originalIcon.getImage().getScaledInstance(32, 32, Image.SCALE_SMOOTH);
+        ImageIcon logoIcon = new ImageIcon(scaledImage);
+
+        JLabel logoLabel = new JLabel(logoIcon);
+        logoLabel.setBorder(addPadding(4, 10, 4, 10));
+        logoLabel.setVerticalAlignment(SwingConstants.TOP);
+        logoLabel.setHorizontalAlignment(SwingConstants.LEFT);
+
+        JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 4));
+        leftPanel.setBackground(WIT_RED);
+        leftPanel.add(logoLabel);
+
+        JLabel title = new JLabel("Akademia WIT – Chat");
+        title.setForeground(TEXT_COLOR);
+        title.setFont(new Font("Inter", Font.BOLD, 18));
+        title.setBorder(addPadding(0, 10, 0, 0));
+
+        header.add(leftPanel, BorderLayout.WEST);
+        header.add(title, BorderLayout.CENTER);
+
+        return header;
+    }
+
 
     private void addGuiComponents() {
         addConnectedUsersComponents();
@@ -53,10 +86,10 @@ public class ClientGUI extends JFrame implements MessageListener {
         connectedUsersPanel = new JPanel();
         connectedUsersPanel.setBorder(addPadding(10, 10, 10, 10));
         connectedUsersPanel.setLayout(new BoxLayout(connectedUsersPanel, BoxLayout.Y_AXIS));
-        connectedUsersPanel.setBackground(GRAY_THEME);
+        connectedUsersPanel.setBackground(WIT_DARK_GRAY);
         connectedUsersPanel.setPreferredSize(new Dimension(200, getHeight()));
 
-        var connectedUsersLabel = new JLabel("Online: ");
+        var connectedUsersLabel = new JLabel("Online:");
         connectedUsersLabel.setFont(new Font("Inter", Font.BOLD, 18));
         connectedUsersLabel.setForeground(TEXT_COLOR);
         connectedUsersPanel.add(connectedUsersLabel);
@@ -64,67 +97,58 @@ public class ClientGUI extends JFrame implements MessageListener {
         add(connectedUsersPanel, BorderLayout.WEST);
     }
 
-    private void addChatComponents(){
+    private void addChatComponents() {
         JPanel chatPanel = new JPanel(new BorderLayout());
-        chatPanel.setBackground(TRANSPARENT);
+        chatPanel.setBackground(WIT_LIGHT_GRAY);
 
         messagePanel = new JPanel();
         messagePanel.setLayout(new BoxLayout(messagePanel, BoxLayout.Y_AXIS));
-        messagePanel.setBackground(DARK_THEME);
+        messagePanel.setBackground(WIT_DARK_GRAY);
         chatPanel.add(new JScrollPane(messagePanel), BorderLayout.CENTER);
 
         var inputPanel = new JPanel(new BorderLayout());
-        inputPanel.setBackground(DARK_THEME);
+        inputPanel.setBackground(WIT_DARK_GRAY);
         inputPanel.setBorder(addPadding(10, 10, 10, 10));
-        inputPanel.setLayout(new BorderLayout());
 
         var inputField = new JTextField();
-        inputField.addKeyListener(new KeyAdapter(){
+        inputField.addKeyListener(new KeyAdapter() {
             @Override
-            public void keyTyped(KeyEvent e){
-                if (e.getKeyChar() == KeyEvent.VK_ENTER){
+            public void keyTyped(KeyEvent e) {
+                if (e.getKeyChar() == KeyEvent.VK_ENTER) {
                     String input = inputField.getText();
                     if (StringUtils.isEmpty(input)) return;
                     inputField.setText("");
-
-//                    messagePanel.add(createChatMessageComponent(new Message(username,input)));
-                    repaint();
-                    revalidate();
-
                     client.sendMessage(new Message(username, input));
                 }
             }
         });
-        inputField.setBackground(DARK_THEME);
+
+        inputField.setBackground(WIT_DARK_GRAY);
         inputField.setForeground(TEXT_COLOR);
-        inputField.setBorder(addPadding(0, 10, 0, 10));
+        inputField.setBorder(BorderFactory.createLineBorder(WIT_RED, 2));
         inputField.setFont(new Font("Inter", Font.PLAIN, 16));
         inputField.setCaretColor(TEXT_COLOR);
-        inputField.setBorder(BorderFactory.createLineBorder(TEXT_COLOR, 2)); // White border
-
         inputField.setPreferredSize(new Dimension(0, 50));
 
         inputPanel.add(inputField, BorderLayout.CENTER);
-
         chatPanel.add(inputPanel, BorderLayout.SOUTH);
-
         add(chatPanel, BorderLayout.CENTER);
     }
 
-    private JPanel createChatMessageComponent(Message message){
+    private JPanel createChatMessageComponent(Message message) {
         var chatMessage = new JPanel();
         chatMessage.setBackground(TRANSPARENT);
         chatMessage.setLayout(new BoxLayout(chatMessage, BoxLayout.Y_AXIS));
         chatMessage.setBorder(addPadding(20, 20, 10, 20));
+        chatMessage.setMaximumSize(new Dimension(600, Integer.MAX_VALUE));
 
         var usernameLabel = new JLabel(message.getUser());
         usernameLabel.setFont(new Font("Inter", Font.BOLD, 18));
         usernameLabel.setForeground(TEXT_COLOR);
-
         chatMessage.add(usernameLabel);
 
         var messageLabel = new JLabel(message.getMessage());
-        messageLabel.setFont(new Font("Inter", Font.BOLD, 18));
+        messageLabel.setFont(new Font("Inter", Font.PLAIN, 16));
         messageLabel.setForeground(TEXT_COLOR);
         chatMessage.add(messageLabel);
 
@@ -133,16 +157,18 @@ public class ClientGUI extends JFrame implements MessageListener {
 
     @Override
     public void onMessageReceived(Message message) {
-        System.out.println("on message received");
-
+        messagePanel.add(Box.createVerticalStrut(5));
         messagePanel.add(createChatMessageComponent(message));
+        messagePanel.add(Box.createVerticalStrut(5));
         revalidate();
         repaint();
     }
 
     @Override
     public void onActiveUsersUpdated(ArrayList<String> users) {
-        if (connectedUsersPanel.getComponents().length>=2){
+        if (connectedUsersPanel == null) return;
+
+        while (connectedUsersPanel.getComponentCount() > 1) {
             connectedUsersPanel.remove(1);
         }
 
@@ -150,9 +176,8 @@ public class ClientGUI extends JFrame implements MessageListener {
         userListPanel.setBackground(TRANSPARENT);
         userListPanel.setLayout(new BoxLayout(userListPanel, BoxLayout.Y_AXIS));
 
-        users.stream().forEach(user -> {
-            var username = new JLabel();
-            username.setText(user);
+        users.forEach(user -> {
+            var username = new JLabel(user);
             username.setForeground(TEXT_COLOR);
             username.setFont(new Font("Inter", Font.BOLD, 16));
             userListPanel.add(username);

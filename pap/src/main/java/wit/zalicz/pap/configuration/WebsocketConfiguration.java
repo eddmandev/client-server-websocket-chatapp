@@ -18,7 +18,6 @@ public class WebsocketConfiguration implements WebSocketMessageBrokerConfigurer 
 
     // Configurating our stomp protocol\
     //STOMP - Simple Text Oriented Messaging Protocol
-
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry){
         // register the websocket endpoint "ws" for websocket connections

@@ -7,6 +7,7 @@ import org.springframework.messaging.simp.stomp.StompHeaders;
 import org.springframework.messaging.simp.stomp.StompSession;
 import org.springframework.messaging.simp.stomp.StompSessionHandlerAdapter;
 
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 
@@ -48,8 +49,19 @@ public class StompSessionHandler extends StompSessionHandlerAdapter {
         session.subscribe("/topic/users", new StompFrameHandler() {
             @Override
             public Type getPayloadType(StompHeaders headers) {
-                return new ArrayList<String>().getClass();
+                return new ParameterizedType() {
+                    public Type[] getActualTypeArguments() {
+                        return new Type[]{String.class};
+                    }
+                    public Type getRawType() {
+                        return ArrayList.class;
+                    }
+                    public Type getOwnerType() {
+                        return null;
+                    }
+                };
             }
+
 
             @Override
             public void handleFrame(StompHeaders headers, Object payload) {
