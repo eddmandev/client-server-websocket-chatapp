@@ -17,7 +17,7 @@ import java.util.concurrent.ExecutionException;
 import static wit.zalicz.pap.utils.ComponentUtilities.*;
 
 public class ClientGUI extends JFrame implements MessageListener {
-    private JPanel connectedUsersPanel;
+    private JPanel connectedUsersPanel = new JPanel();
     private JPanel messagePanel;
     private StompClient client;
     private String username;
@@ -32,7 +32,12 @@ public class ClientGUI extends JFrame implements MessageListener {
         addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                int userChoice = JOptionPane.showConfirmDialog(ClientGUI.this, "Czy chcesz wyjsc z aplikacji?", "Zamknij", JOptionPane.YES_NO_OPTION);
+                int userChoice = JOptionPane.showConfirmDialog(
+                        ClientGUI.this,
+                        "Czy chcesz wyjść z aplikacji?",
+                        "Zamknij",
+                        JOptionPane.YES_NO_OPTION
+                );
                 if (userChoice == JOptionPane.YES_OPTION) {
                     client.disconnectUser(username);
                     ClientGUI.this.dispose();
@@ -41,13 +46,43 @@ public class ClientGUI extends JFrame implements MessageListener {
         });
 
         getContentPane().setBackground(DARK_THEME);
-        addGuiComponents();
+        setLayout(new BorderLayout());
+
+        addHeader();
+        addConnectedUsersComponents();
         addChatComponents();
     }
 
     private void addGuiComponents() {
         addConnectedUsersComponents();
     }
+
+    private void addHeader() {
+        JPanel header = new JPanel(new BorderLayout());
+        header.setBackground(ACCENT_BORDO);
+        header.setPreferredSize(new Dimension(getWidth(), 80));
+
+        ImageIcon originalIcon = new ImageIcon(
+                getClass().getResource("/static/images/640px-Logo-WIT-2019.png")
+        );
+
+        int logoHeight = 60;
+        int logoWidth = (int) ((double) originalIcon.getIconWidth() / originalIcon.getIconHeight() * logoHeight);
+
+        Image scaledImage = originalIcon.getImage().getScaledInstance(
+                logoWidth, logoHeight, Image.SCALE_SMOOTH
+        );
+
+        JLabel logoLabel = new JLabel(new ImageIcon(scaledImage));
+        logoLabel.setHorizontalAlignment(SwingConstants.LEFT);
+        logoLabel.setVerticalAlignment(SwingConstants.TOP);
+        logoLabel.setBorder(addPadding(10, 10, 10, 10));
+
+        header.add(logoLabel, BorderLayout.WEST);
+
+        add(header, BorderLayout.NORTH);
+    }
+
 
     private void addConnectedUsersComponents() {
         connectedUsersPanel = new JPanel();
@@ -87,7 +122,6 @@ public class ClientGUI extends JFrame implements MessageListener {
                     if (StringUtils.isEmpty(input)) return;
                     inputField.setText("");
 
-//                    messagePanel.add(createChatMessageComponent(new Message(username,input)));
                     repaint();
                     revalidate();
 
@@ -142,24 +176,21 @@ public class ClientGUI extends JFrame implements MessageListener {
 
     @Override
     public void onActiveUsersUpdated(ArrayList<String> users) {
-        if (connectedUsersPanel.getComponents().length>=2){
-            connectedUsersPanel.remove(1);
-        }
+        SwingUtilities.invokeLater(() -> {
+            while (connectedUsersPanel.getComponentCount() > 1) {
+                connectedUsersPanel.remove(1);
+            }
 
-        var userListPanel = new JPanel();
-        userListPanel.setBackground(TRANSPARENT);
-        userListPanel.setLayout(new BoxLayout(userListPanel, BoxLayout.Y_AXIS));
+            for (String user : users) {
+                JLabel usernameLabel = new JLabel(user);
+                usernameLabel.setForeground(TEXT_COLOR);
+                usernameLabel.setFont(new Font("Inter", Font.BOLD, 16));
+                connectedUsersPanel.add(usernameLabel);
+            }
 
-        users.stream().forEach(user -> {
-            var username = new JLabel();
-            username.setText(user);
-            username.setForeground(TEXT_COLOR);
-            username.setFont(new Font("Inter", Font.BOLD, 16));
-            userListPanel.add(username);
+            connectedUsersPanel.revalidate();
+            connectedUsersPanel.repaint();
         });
-
-        connectedUsersPanel.add(userListPanel);
-        connectedUsersPanel.revalidate();
-        connectedUsersPanel.repaint();
     }
+
 }
